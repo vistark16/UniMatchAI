@@ -1,161 +1,4 @@
-def _get_major_specific_tips(self, major_name: str, university_name: str = None) -> str:
-        """Get major-specific tips and requirements"""
-        major_lower = major_name.lower()
-        tips = []
-        
-        if 'informatika' in major_lower or 'komputer' in major_lower:
-            tips = [
-                "• **Matematika** adalah fondasi utama - kuasai logika, aljabar, dan statistika",
-                "• **Algoritma & Pemrograman** - mulai belajar bahasa pemrograman seperti Python/Java",
-                "• **Logika Berpikir** - latihan soal-soal logika dan problem solving",
-                "• **Bahasa Inggris** - penting untuk membaca dokumentasi teknis",
-                "• **Portofolio** - buat project sederhana untuk menunjukkan kemampuan"
-            ]
-        elif 'kedokteran' in major_lower:
-            tips = [
-                "• **Biologi** - fokus pada anatomi, fisiologi, dan biokimia",
-                "• **Kimia** - kuasai kimia organik dan biokimia",
-                "• **Fisika** - pahami prinsip fisika dalam tubuh manusia",
-                "• **Bahasa Inggris** - untuk membaca jurnal medis internasional",
-                "• **Soft Skills** - empati, komunikasi, dan ketahanan mental"
-            ]
-        elif 'teknik' in major_lower:
-            tips = [
-                "• **Matematika & Fisika** - dasar semua cabang teknik",
-                "• **Problem Solving** - latihan soal-soal aplikatif",
-                "• **Kreativitas** - kemampuan berpikir inovatif",
-                "• **Kerja Tim** - banyak project berbasis kelompok",
-                "• **Update Teknologi** - ikuti perkembangan teknologi terkini"
-            ]
-        elif 'ekonomi' in major_lower or 'manajemen' in major_lower:
-            tips = [
-                "• **Matematika** - statistika, kalkulus, dan matematika bisnis",
-                "• **Bahasa Inggris** - komunikasi bisnis internasional",
-                "• **Analisis** - kemampuan berpikir kritis dan analitis",
-                "• **Leadership** - keterampilan kepemimpinan dan manajemen",
-                "• **Current Issues** - ikuti perkembangan ekonomi dan bisnis"
-            ]
-        elif 'hukum' in major_lower:
-            tips = [
-                "• **Bahasa Indonesia** - kemampuan menulis dan berargumentasi",
-                "• **Sejarah** - memahami sejarah hukum dan konstitusi",
-                "• **Logika** - kemampuan berpikir sistematis dan analitis",
-                "• **Public Speaking** - keterampilan berbicara di depan umum",
-                "• **Reading** - banyak membaca kasus hukum dan perundangan"
-            ]
-        else:
-            tips = [
-                "• **Mata Pelajaran Inti** - fokus pada mapel yang relevan dengan jurusan",
-                "• **Soft Skills** - komunikasi, leadership, dan teamwork",
-                "• **Wawasan Umum** - perbanyak membaca dan update informasi",
-                "• **Pengalaman** - ikuti kegiatan ekstrakurikuler yang relevan",
-                "• **Networking** - bangun relasi dengan senior di bidang yang sama"
-            ]
-        
-        return "\n".join(tips)
-    
-    def _find_related_majors(self, major_name: str, university_name: str = None) -> List[Dict]:
-        """Find related majors in the knowledge base"""
-        related = []
-        major_lower = major_name.lower()
-        
-        for key, major_data in self.majors_kb.items():
-            if not major_data.get('university') or not major_data.get('major'):
-                continue
-                
-            kb_major = major_data.get('major', '').lower()
-            kb_university = major_data.get('university', '').lower()
-            
-            # Check if major matches
-            is_major_match = any(word in kb_major for word in major_lower.split())
-            
-            # Check university match if specified
-            is_university_match = True
-            if university_name:
-                uni_lower = university_name.lower()
-                is_university_match = uni_lower in kb_university or any(
-                    alias.lower() in kb_university for alias, full in self.university_aliases.items() 
-                    if full.lower() == uni_lower
-                )
-            
-            if is_major_match and is_university_match:
-                related.append({
-                    'university': major_data.get('university'),
-                    'major': major_data.get('major'),
-                    'required_rapor': major_data.get('required_rapor'),
-                    'passing_grade': major_data.get('passing_grade'),
-                    'acceptance_rate': major_data.get('acceptance_rate'),
-                    'competitiveness': major_data.get('competitiveness')
-                })
-        
-        # Sort by acceptance rate (higher is better) and required rapor (lower is better)
-        related.sort(key=lambda x: (
-            -(x.get('acceptance_rate') or 0),
-            x.get('required_rapor') or 100
-        ))
-        
-        return related[:5]  # Return top 5
-    
-    def _format_related_majors_info(self, related_majors: List[Dict]) -> str:
-        """Format related majors information"""
-        if not related_majors:
-            return "• Informasi detail tidak tersedia dalam database"
-        
-        result = ""
-        for i, major in enumerate(related_majors, 1):
-            result += f"""
-**{i}. {major['major']} - {major['university']}**
-   • Rata-rata Rapor: {major.get('required_rapor', 'N/A')}
-   • Passing Grade: {major.get('passing_grade', 'N/A')}
-   • Acceptance Rate: {major.get('acceptance_rate', 'N/A')}%
-   • Tingkat Persaingan: {major.get('competitiveness', 'N/A')}"""
-        
-        return result
-    
-    def _format_grade_breakdown(self, grades: Dict[str, float]) -> str:
-        """Format grade breakdown for display"""
-        result = "**Nilai yang Anda berikan:**\n"
-        
-        for subject, grade in grades.items():
-            if subject != 'rata_rata':
-                subject_display = subject.replace('_', ' ').title()
-                result += f"• {subject_display}: {grade}\n"
-        
-        return result
-    
-    def _generate_personalized_guidance(self, grades: Dict[str, float], avg_grade: float, 
-                                      very_likely: List[Dict], likely: List[Dict], 
-                                      possible: List[Dict]) -> str:
-        """Generate personalized guidance based on grades and recommendations"""
-        guidance = []
-        
-        # Analyze grade pattern
-        if avg_grade >= 90:
-            guidance.append("🌟 Nilai Anda sangat excellent! Hampir semua jurusan terbuka untuk Anda.")
-        elif avg_grade >= 85:
-            guidance.append("👍 Nilai Anda sangat baik! Banyak pilihan jurusan berkualitas menanti.")
-        elif avg_grade >= 80:
-            guidance.append("✅ Nilai Anda cukup baik! Fokus pada jurusan yang sesuai minat.")
-        elif avg_grade >= 75:
-            guidance.append("💪 Masih ada peluang bagus! Tingkatkan nilai di semester terakhir.")
-        else:
-            guidance.append("🎯 Fokus perbaiki nilai semester terakhir untuk membuka lebih banyak peluang.")
-        
-        # Subject-specific advice
-        if 'matematika' in grades and grades['matematika'] >= 85:
-            guidance.append("• Nilai matematika Anda bagus - cocok untuk jurusan Saintek/Ekonomi")
-        if 'fisika' in grades and grades['fisika'] >= 85:
-            guidance.append("• Nilai fisika tinggi - pertimbangkan jurusan Teknik")
-        if 'biologi' in grades and grades['biologi'] >= 85:
-            guidance.append("• Nilai biologi excellent - Kedokteran/Farmasi bisa jadi pilihan")
-        if 'bahasa_indonesia' in grades and grades['bahasa_indonesia'] >= 85:
-            guidance.append("• Kemampuan bahasa baik - cocok untuk jurusan Soshum")
-        
-        # Recommendation-based advice
-        if len(very_likely) >= 3:
-            guidance.append("• Anda memiliki banyak pilihan dengan peluang tinggi - pilih yang sesuai minat")
-        elif len(very_likely) == 0 and len(likely) > 0:
-            guidance.append("•# backend/chatbot.py
+# backend/chatbot.py
 import json
 import re
 from typing import Dict, List, Optional, Tuple
@@ -1054,11 +897,11 @@ Atau jika masih bingung memilih jurusan, coba ceritakan:
         
         for i, major in enumerate(matching_majors[:5], 1):
             info_text += f"""**{i}. {major.get('university')} - {major.get('major')}**
-• Passing Grade: {major.get('passing_grade', 'N/A')}
-• Rata-rata Rapor: {major.get('required_rapor', 'N/A')}
-• Tingkat Persaingan: {major.get('competitiveness', 'N/A')}
-• Daya Tampung: {major.get('capacity', 'N/A')} orang
-• Acceptance Rate: {major.get('acceptance_rate', 'N/A')}%
+   • Passing Grade: {major.get('passing_grade', 'N/A')}
+   • Rata-rata Rapor: {major.get('required_rapor', 'N/A')}
+   • Tingkat Persaingan: {major.get('competitiveness', 'N/A')}
+   • Daya Tampung: {major.get('capacity', 'N/A')} orang
+   • Acceptance Rate: {major.get('acceptance_rate', 'N/A')}%
 
 """
         
@@ -1133,14 +976,25 @@ Silakan tanyakan apa yang ingin Anda ketahui! 😊"""
         else:
             return 'soshum'
     
-    def _format_major_list(self, majors: List[Dict]) -> str:
+    def _format_major_list(self, majors: List[Dict], show_details: bool = False) -> str:
         """Format major list for display"""
         if not majors:
             return "• Tidak ada jurusan dalam kategori ini\n"
         
         result = ""
         for major in majors[:5]:  # Limit to 5 per category
-            result += f"• **{major['major']}** ({major['university']}) - Peluang: {major['probability']*100:.1f}%\n"
+            if show_details:
+                result += f"• **{major['major']}** ({major['university']}) - Peluang: {major['probability']*100:.1f}%\n"
+                if major.get('required_rapor'):
+                    result += f"  - Rata-rata Rapor Required: {major['required_rapor']}\n"
+                if major.get('current_gap'):
+                    gap = major['current_gap']
+                    if gap > 0:
+                        result += f"  - Gap: +{gap:.1f} (Anda sudah melampaui requirement)\n"
+                    else:
+                        result += f"  - Gap: {gap:.1f} (Perlu ditingkatkan)\n"
+            else:
+                result += f"• **{major['major']}** ({major['university']}) - Peluang: {major['probability']*100:.1f}%\n"
         
         return result
     
@@ -1161,3 +1015,166 @@ Topik yang harus dikuasai:"""
             result += "\n"
         
         return result
+    
+    def _get_major_specific_tips(self, major_name: str, university_name: str = None) -> str:
+        """Get major-specific tips and requirements"""
+        major_lower = major_name.lower()
+        tips = []
+        
+        if 'informatika' in major_lower or 'komputer' in major_lower:
+            tips = [
+                "• **Matematika** adalah fondasi utama - kuasai logika, aljabar, dan statistika",
+                "• **Algoritma & Pemrograman** - mulai belajar bahasa pemrograman seperti Python/Java",
+                "• **Logika Berpikir** - latihan soal-soal logika dan problem solving",
+                "• **Bahasa Inggris** - penting untuk membaca dokumentasi teknis",
+                "• **Portofolio** - buat project sederhana untuk menunjukkan kemampuan"
+            ]
+        elif 'kedokteran' in major_lower:
+            tips = [
+                "• **Biologi** - fokus pada anatomi, fisiologi, dan biokimia",
+                "• **Kimia** - kuasai kimia organik dan biokimia",
+                "• **Fisika** - pahami prinsip fisika dalam tubuh manusia",
+                "• **Bahasa Inggris** - untuk membaca jurnal medis internasional",
+                "• **Soft Skills** - empati, komunikasi, dan ketahanan mental"
+            ]
+        elif 'teknik' in major_lower:
+            tips = [
+                "• **Matematika & Fisika** - dasar semua cabang teknik",
+                "• **Problem Solving** - latihan soal-soal aplikatif",
+                "• **Kreativitas** - kemampuan berpikir inovatif",
+                "• **Kerja Tim** - banyak project berbasis kelompok",
+                "• **Update Teknologi** - ikuti perkembangan teknologi terkini"
+            ]
+        elif 'ekonomi' in major_lower or 'manajemen' in major_lower:
+            tips = [
+                "• **Matematika** - statistika, kalkulus, dan matematika bisnis",
+                "• **Bahasa Inggris** - komunikasi bisnis internasional",
+                "• **Analisis** - kemampuan berpikir kritis dan analitis",
+                "• **Leadership** - keterampilan kepemimpinan dan manajemen",
+                "• **Current Issues** - ikuti perkembangan ekonomi dan bisnis"
+            ]
+        elif 'hukum' in major_lower:
+            tips = [
+                "• **Bahasa Indonesia** - kemampuan menulis dan berargumentasi",
+                "• **Sejarah** - memahami sejarah hukum dan konstitusi",
+                "• **Logika** - kemampuan berpikir sistematis dan analitis",
+                "• **Public Speaking** - keterampilan berbicara di depan umum",
+                "• **Reading** - banyak membaca kasus hukum dan perundangan"
+            ]
+        else:
+            tips = [
+                "• **Mata Pelajaran Inti** - fokus pada mapel yang relevan dengan jurusan",
+                "• **Soft Skills** - komunikasi, leadership, dan teamwork",
+                "• **Wawasan Umum** - perbanyak membaca dan update informasi",
+                "• **Pengalaman** - ikuti kegiatan ekstrakurikuler yang relevan",
+                "• **Networking** - bangun relasi dengan senior di bidang yang sama"
+            ]
+        
+        return "\n".join(tips)
+    
+    def _find_related_majors(self, major_name: str, university_name: str = None) -> List[Dict]:
+        """Find related majors in the knowledge base"""
+        related = []
+        major_lower = major_name.lower()
+        
+        for key, major_data in self.majors_kb.items():
+            if not major_data.get('university') or not major_data.get('major'):
+                continue
+                
+            kb_major = major_data.get('major', '').lower()
+            kb_university = major_data.get('university', '').lower()
+            
+            # Check if major matches
+            is_major_match = any(word in kb_major for word in major_lower.split())
+            
+            # Check university match if specified
+            is_university_match = True
+            if university_name:
+                uni_lower = university_name.lower()
+                is_university_match = uni_lower in kb_university or any(
+                    alias.lower() in kb_university for alias, full in self.university_aliases.items() 
+                    if full.lower() == uni_lower
+                )
+            
+            if is_major_match and is_university_match:
+                related.append({
+                    'university': major_data.get('university'),
+                    'major': major_data.get('major'),
+                    'required_rapor': major_data.get('required_rapor'),
+                    'passing_grade': major_data.get('passing_grade'),
+                    'acceptance_rate': major_data.get('acceptance_rate'),
+                    'competitiveness': major_data.get('competitiveness')
+                })
+        
+        # Sort by acceptance rate (higher is better) and required rapor (lower is better)
+        related.sort(key=lambda x: (
+            -(x.get('acceptance_rate') or 0),
+            x.get('required_rapor') or 100
+        ))
+        
+        return related[:5]  # Return top 5
+    
+    def _format_related_majors_info(self, related_majors: List[Dict]) -> str:
+        """Format related majors information"""
+        if not related_majors:
+            return "• Informasi detail tidak tersedia dalam database"
+        
+        result = ""
+        for i, major in enumerate(related_majors, 1):
+            result += f"""
+**{i}. {major['major']} - {major['university']}**
+   • Rata-rata Rapor: {major.get('required_rapor', 'N/A')}
+   • Passing Grade: {major.get('passing_grade', 'N/A')}
+   • Acceptance Rate: {major.get('acceptance_rate', 'N/A')}%
+   • Tingkat Persaingan: {major.get('competitiveness', 'N/A')}"""
+        
+        return result
+    
+    def _format_grade_breakdown(self, grades: Dict[str, float]) -> str:
+        """Format grade breakdown for display"""
+        result = "**Nilai yang Anda berikan:**\n"
+        
+        for subject, grade in grades.items():
+            if subject != 'rata_rata':
+                subject_display = subject.replace('_', ' ').title()
+                result += f"• {subject_display}: {grade}\n"
+        
+        return result
+    
+    def _generate_personalized_guidance(self, grades: Dict[str, float], avg_grade: float, 
+                                      very_likely: List[Dict], likely: List[Dict], 
+                                      possible: List[Dict]) -> str:
+        """Generate personalized guidance based on grades and recommendations"""
+        guidance = []
+        
+        # Analyze grade pattern
+        if avg_grade >= 90:
+            guidance.append("🌟 Nilai Anda sangat excellent! Hampir semua jurusan terbuka untuk Anda.")
+        elif avg_grade >= 85:
+            guidance.append("👍 Nilai Anda sangat baik! Banyak pilihan jurusan berkualitas menanti.")
+        elif avg_grade >= 80:
+            guidance.append("✅ Nilai Anda cukup baik! Fokus pada jurusan yang sesuai minat.")
+        elif avg_grade >= 75:
+            guidance.append("💪 Masih ada peluang bagus! Tingkatkan nilai di semester terakhir.")
+        else:
+            guidance.append("🎯 Fokus perbaiki nilai semester terakhir untuk membuka lebih banyak peluang.")
+        
+        # Subject-specific advice
+        if 'matematika' in grades and grades['matematika'] >= 85:
+            guidance.append("• Nilai matematika Anda bagus - cocok untuk jurusan Saintek/Ekonomi")
+        if 'fisika' in grades and grades['fisika'] >= 85:
+            guidance.append("• Nilai fisika tinggi - pertimbangkan jurusan Teknik")
+        if 'biologi' in grades and grades['biologi'] >= 85:
+            guidance.append("• Nilai biologi excellent - Kedokteran/Farmasi bisa jadi pilihan")
+        if 'bahasa_indonesia' in grades and grades['bahasa_indonesia'] >= 85:
+            guidance.append("• Kemampuan bahasa baik - cocok untuk jurusan Soshum")
+        
+        # Recommendation-based advice
+        if len(very_likely) >= 3:
+            guidance.append("• Anda memiliki banyak pilihan dengan peluang tinggi - pilih yang sesuai minat")
+        elif len(very_likely) == 0 and len(likely) > 0:
+            guidance.append("• Fokus pada pilihan dengan peluang sedang dan siapkan backup plan")
+        elif len(very_likely) == 0 and len(likely) == 0:
+            guidance.append("• Tingkatkan nilai secara signifikan atau pertimbangkan target yang lebih realistis")
+        
+        return "\n".join(guidance)
