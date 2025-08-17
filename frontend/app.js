@@ -1,4 +1,4 @@
-// ===== Unimatch AI - Frontend (University + Major Selection) =====
+// ===== Unimatch AI - Frontend (University + Major Selection + Chatbot) =====
 const API_BASE = window.API_BASE || "http://127.0.0.1:8000";
 
 const GRADE_FIELDS = [
@@ -30,6 +30,27 @@ function atLeastOneGradeFilled(){
 /* ====== Data Storage ====== */
 const UNIVERSITIES_DATA = { all: [] };
 const MAJORS_DATA = { all: [] };
+
+/* ====== View Management ====== */
+let currentView = 'prediction'; // 'prediction' or 'chatbot'
+
+function switchView(view) {
+  const predictionView = $('predictionView');
+  const chatbotView = $('chatbotView');
+  const toggleBtn = $('toggleView');
+  
+  if (view === 'chatbot') {
+    predictionView.style.display = 'none';
+    chatbotView.style.display = 'block';
+    toggleBtn.textContent = 'SNBP Prediction';
+    currentView = 'chatbot';
+  } else {
+    predictionView.style.display = 'block';
+    chatbotView.style.display = 'none';
+    toggleBtn.textContent = 'Konsultasi Chatbot';
+    currentView = 'prediction';
+  }
+}
 
 /* ====== University + Major Selection System ====== */
 const SELECTION_PAIRS = {
@@ -78,7 +99,7 @@ function loadUniversitiesOptions(){
 }
 
 function loadMajorsOptions() {
-  return fetch(`${API_BASE}/api/kb/majors-full`)  // Endpoint baru
+  return fetch(`${API_BASE}/api/kb/majors-full`)
     .then(r => r.json())
     .then(d => {
       MAJORS_DATA.all = Array.isArray(d.majors) ? d.majors : [];
@@ -91,15 +112,9 @@ function loadMajorsOptions() {
 }
 
 function getMajorsForUniversity(universityName) {
-  // This would ideally come from an API endpoint that returns majors for a specific university
-  // For now, we'll filter based on program type and return all majors
-  // In a real implementation, you'd call: `/api/kb/universities/${universityName}/majors`
-  
    if (!universityName) return [];
   
-  // Filter major berdasarkan universitas yang dipilih
   return MAJORS_DATA.all.filter(m => {
-    // Format key di KB: "Universitas | Major"
     const uniMajorKey = `${universityName} | ${m}`;
     return MAJORS_DATA.details[uniMajorKey] !== undefined;
   });
@@ -128,7 +143,6 @@ function getSelectedMajors() {
 function getAvailableUniversities(currentKey) {
   const alreadySelected = new Set();
   
-  // Collect already selected universities from other selectors
   Object.keys(SELECTION_PAIRS).forEach(key => {
     if (key !== currentKey && SELECTION_PAIRS[key].university.selected) {
       alreadySelected.add(SELECTION_PAIRS[key].university.selected);
@@ -144,14 +158,12 @@ function getAvailableMajorsForChoice(choiceKey) {
   
   const alreadySelectedMajors = new Set();
   
-  // Collect already selected majors from other selectors
   Object.keys(SELECTION_PAIRS).forEach(key => {
     if (key !== choiceKey && SELECTION_PAIRS[key].major.selected) {
       alreadySelectedMajors.add(SELECTION_PAIRS[key].major.selected);
     }
   });
 
-  // Get majors for the selected university and filter out already selected ones
   return getMajorsForUniversity(universitySelected)
     .filter(m => !alreadySelectedMajors.has(m));
 }
@@ -169,7 +181,6 @@ function renderSelectedItem(choiceKey, type) {
     `;
     selector.input.style.display = 'none';
     
-    // Add remove handler
     selectedDiv.querySelector('.remove-btn').addEventListener('click', (e) => {
       e.stopPropagation();
       clearSelection(choiceKey, type);
@@ -186,7 +197,6 @@ function clearSelection(choiceKey, type) {
   SELECTION_PAIRS[choiceKey][type].dropdown.hidden = true;
   renderSelectedItem(choiceKey, type);
   
-  // If clearing university, also clear and disable major
   if (type === 'university') {
     clearSelection(choiceKey, 'major');
     setMajorDisabled(choiceKey, true);
@@ -199,7 +209,6 @@ function selectItem(choiceKey, type, item) {
   SELECTION_PAIRS[choiceKey][type].dropdown.hidden = true;
   renderSelectedItem(choiceKey, type);
   
-  // If selecting university, enable major selection and clear any existing major
   if (type === 'university') {
     clearSelection(choiceKey, 'major');
     setMajorDisabled(choiceKey, false);
@@ -240,11 +249,9 @@ function showAllOptions(choiceKey, type) {
     `<div class="opt" data-choice="${choiceKey}" data-type="${type}" data-item="${encodeURIComponent(item)}">${item}</div>`
   ).join("");
   
-  // Ensure proper z-index before showing
   selector.dropdown.style.zIndex = '9999';
   selector.dropdown.hidden = false;
 
-  // Add click handlers
   selector.dropdown.querySelectorAll(".opt").forEach(opt => {
     opt.addEventListener("mousedown", (e) => {
       e.preventDefault();
@@ -290,7 +297,6 @@ function renderSearchResults(choiceKey, type, query) {
   selector.dropdown.style.zIndex = '9999';
   selector.dropdown.hidden = false;
 
-  // Add click handlers
   selector.dropdown.querySelectorAll(".opt").forEach(opt => {
     opt.addEventListener("mousedown", (e) => {
       e.preventDefault();
@@ -309,12 +315,10 @@ function initSingleSelector(choiceKey, type) {
   selector.dropdown = $(`${choiceKey}${type.charAt(0).toUpperCase() + type.slice(1)}Dropdown`);
   selector.selectedDiv = $(`${choiceKey}${type.charAt(0).toUpperCase() + type.slice(1)}Selected`);
 
-  // Set initial disabled state for majors
   if (type === 'major') {
     setMajorDisabled(choiceKey, true);
   }
 
-  // Event listeners
   selector.input.addEventListener("input", () => {
     renderSearchResults(choiceKey, type, selector.input.value.trim());
   });
@@ -339,17 +343,14 @@ function initSingleSelector(choiceKey, type) {
   });
   
   selector.box.addEventListener("click", (e) => {
-    // Don't trigger if clicking remove button
     if (e.target.matches('.remove-btn')) return;
     if (type === 'major' && selector.disabled) return;
     
     if (selector.selected) {
-      // If already selected, show options to change
       selector.input.style.display = 'block';
       selector.input.focus();
       showAllOptions(choiceKey, type);
     } else {
-      // Show all available options
       selector.input.focus();
       showAllOptions(choiceKey, type);
     }
@@ -359,14 +360,12 @@ function initSingleSelector(choiceKey, type) {
     setTimeout(() => selector.dropdown.hidden = true, 200);
   });
 
-  // Dalam fungsi initSingleSelector untuk university
   selector.input.addEventListener("change", () => {
     const query = selector.input.value.trim();
     if (query) {
       renderSearchResults(choiceKey, 'university', query);
     }
   
-  // Setelah memilih universitas, update major options
     if (selector.selected) {
       setMajorDisabled(choiceKey, false);
       showAllOptions(choiceKey, 'major');
@@ -380,9 +379,7 @@ function initSelectors() {
     initSingleSelector(choiceKey, 'major');
   });
   
-  // Program change handler
   $("program").addEventListener("change", () => {
-    // Hide all dropdowns and refresh if any are open
     Object.keys(SELECTION_PAIRS).forEach(choiceKey => {
       ['university', 'major'].forEach(type => {
         const selector = SELECTION_PAIRS[choiceKey][type];
@@ -397,8 +394,257 @@ function initSelectors() {
     });
   });
 
-  // Load data
   Promise.all([loadUniversitiesOptions(), loadMajorsOptions()]);
+}
+
+/* ====== Chatbot Functionality ====== */
+let chatbotHistory = [];
+
+function addMessageToChat(message, isUser = false) {
+  const chatMessages = $('chatMessages');
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+  
+  const messageContent = document.createElement('div');
+  messageContent.className = 'message-content';
+  
+  if (isUser) {
+    messageContent.textContent = message;
+  } else {
+    // For bot messages, preserve HTML formatting
+    messageContent.innerHTML = message.replace(/\n/g, '<br>');
+  }
+  
+  messageDiv.appendChild(messageContent);
+  chatMessages.appendChild(messageDiv);
+  
+  // Auto scroll to bottom
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  
+  // Add to history
+  chatbotHistory.push({ message, isUser, timestamp: new Date() });
+}
+
+function setTypingIndicator(show) {
+  const existingIndicator = $('typingIndicator');
+  
+  if (show && !existingIndicator) {
+    const chatMessages = $('chatMessages');
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'typingIndicator';
+    typingDiv.className = 'message bot-message typing';
+    typingDiv.innerHTML = `
+      <div class="message-content">
+        <div class="typing-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    `;
+    chatMessages.appendChild(typingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  } else if (!show && existingIndicator) {
+    existingIndicator.remove();
+  }
+}
+
+async function sendChatMessage(message) {
+  if (!message.trim()) return;
+  
+  // Add user message
+  addMessageToChat(message, true);
+  
+  // Clear input
+  $('chatInput').value = '';
+  
+  // Show typing indicator
+  setTypingIndicator(true);
+  
+  try {
+    const response = await fetch(`${API_BASE}/api/chatbot`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ message })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    // Remove typing indicator
+    setTypingIndicator(false);
+    
+    // Add bot response
+    addMessageToChat(data.response);
+    
+    // Show recommendations or study plan if available
+    if (data.recommendations && data.recommendations.length > 0) {
+      showRecommendationsCard(data.recommendations);
+    }
+    
+    if (data.study_plan && data.study_plan.length > 0) {
+      showStudyPlanCard(data.study_plan);
+    }
+    
+  } catch (error) {
+    console.error('Chatbot error:', error);
+    setTypingIndicator(false);
+    addMessageToChat('Maaf, terjadi kesalahan. Silakan coba lagi nanti. 😔');
+  }
+}
+
+function showRecommendationsCard(recommendations) {
+  const chatMessages = $('chatMessages');
+  const recCard = document.createElement('div');
+  recCard.className = 'message bot-message recommendation-card';
+  
+  let html = `
+    <div class="message-content">
+      <h4>📊 Rekomendasi Jurusan Detail:</h4>
+      <div class="recommendations-table">
+  `;
+  
+  recommendations.slice(0, 8).forEach((rec, index) => {
+    const categoryColor = rec.category === 'Sangat Memungkinkan' ? '#22c55e' : 
+                         rec.category === 'Memungkinkan' ? '#3b82f6' :
+                         rec.category === 'Cukup Memungkinkan' ? '#f59e0b' : '#ef4444';
+    
+    html += `
+      <div class="rec-item">
+        <div class="rec-header">
+          <span class="rec-rank">#${index + 1}</span>
+          <span class="rec-major">${rec.major}</span>
+          <span class="rec-probability" style="background: ${categoryColor}">${(rec.probability * 100).toFixed(1)}%</span>
+        </div>
+        <div class="rec-details">
+          <small>🏛️ ${rec.university}</small>
+          <small>📈 ${rec.category}</small>
+          ${rec.current_gap !== undefined ? `<small>📍 Gap: ${rec.current_gap > 0 ? '+' : ''}${rec.current_gap}</small>` : ''}
+        </div>
+      </div>
+    `;
+  });
+  
+  html += `
+      </div>
+    </div>
+  `;
+  
+  recCard.innerHTML = html;
+  chatMessages.appendChild(recCard);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function showStudyPlanCard(studyPlan) {
+  const chatMessages = $('chatMessages');
+  const planCard = document.createElement('div');
+  planCard.className = 'message bot-message study-plan-card';
+  
+  let html = `
+    <div class="message-content">
+      <h4>📚 Rencana Belajar:</h4>
+      <div class="study-plan-content">
+  `;
+  
+  studyPlan.forEach((subject, index) => {
+    const difficultyIcon = subject.difficulty === 'advanced' ? '🔥' : 
+                          subject.difficulty === 'intermediate' ? '📋' : '📝';
+    
+    html += `
+      <div class="study-subject">
+        <h5>${difficultyIcon} ${subject.subject.replace('_', ' ').toUpperCase()}</h5>
+        <ul class="topics-list">
+    `;
+    
+    subject.topics.slice(0, 4).forEach(topic => {
+      html += `<li>${topic}</li>`;
+    });
+    
+    if (subject.topics.length > 4) {
+      html += `<li><em>+${subject.topics.length - 4} topik lainnya</em></li>`;
+    }
+    
+    html += `
+        </ul>
+      </div>
+    `;
+  });
+  
+  html += `
+      </div>
+    </div>
+  `;
+  
+  planCard.innerHTML = html;
+  chatMessages.appendChild(planCard);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function initChatbot() {
+  const chatInput = $('chatInput');
+  const sendBtn = $('sendBtn');
+  
+  // Send message on button click
+  sendBtn.addEventListener('click', () => {
+    const message = chatInput.value.trim();
+    if (message) {
+      sendChatMessage(message);
+    }
+  });
+  
+  // Send message on Enter key
+  chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      const message = chatInput.value.trim();
+      if (message) {
+        sendChatMessage(message);
+      }
+    }
+  });
+  
+  // Suggestion buttons (if any exist)
+  const suggestionBtns = document.querySelectorAll('.suggestion-btn');
+  if (suggestionBtns.length > 0) {
+    suggestionBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const suggestionText = btn.dataset.text;
+        if (suggestionText) {
+          $('chatInput').value = suggestionText;
+          sendChatMessage(suggestionText);
+        }
+      });
+    });
+  }
+  
+  // Auto-resize input
+  chatInput.addEventListener('input', () => {
+    // Reset height to calculate new height
+    chatInput.style.height = 'auto';
+    
+    // Calculate new height based on content
+    const newHeight = Math.min(chatInput.scrollHeight, 160); // max 160px
+    chatInput.style.height = newHeight + 'px';
+    
+    // Ensure minimum height
+    if (newHeight < 56) {
+      chatInput.style.height = '56px';
+    }
+  });
+  
+  // Handle paste events
+  chatInput.addEventListener('paste', () => {
+    setTimeout(() => {
+      chatInput.style.height = 'auto';
+      const newHeight = Math.min(chatInput.scrollHeight, 160);
+      chatInput.style.height = Math.max(newHeight, 56) + 'px';
+    }, 0);
+  });
 }
 
 /* ====== Payload & Rendering ====== */
@@ -504,12 +750,10 @@ function setLoading(v){
 function validateForm() {
   const issues = [];
   
-  // Basic validation
   if (!atLeastOneGradeFilled()) {
     issues.push("Please fill at least one of S1—S5 grades");
   }
   
-  // University and major selection validation
   const selectedUniversities = getSelectedUniversities();
   const selectedMajors = getSelectedMajors();
   
@@ -521,7 +765,6 @@ function validateForm() {
     issues.push("Please select at least one target major");
   }
   
-  // Check if each university has a corresponding major
   Object.keys(SELECTION_PAIRS).forEach((key, index) => {
     const univSelected = SELECTION_PAIRS[key].university.selected;
     const majorSelected = SELECTION_PAIRS[key].major.selected;
@@ -531,7 +774,6 @@ function validateForm() {
     }
   });
   
-  // Program-specific validation
   const program = val("program");
   
   if (program === "saintek" && selectedMajors.length > 0) {
@@ -556,7 +798,6 @@ function validateForm() {
 $("predictBtn").addEventListener("click", async ()=>{
   const el=$("result");
   
-  // Enhanced validation
   const issues = validateForm();
   if (issues.length > 0) {
     renderResult({ error: issues });
@@ -607,7 +848,6 @@ $("resetBtn").addEventListener("click", ()=>{
   $("accreditation").value="B";
   $("rank_percentile").value="100";
   
-  // Reset all selections
   Object.keys(SELECTION_PAIRS).forEach(choiceKey => {
     clearSelection(choiceKey, 'university');
     clearSelection(choiceKey, 'major');
@@ -617,6 +857,11 @@ $("resetBtn").addEventListener("click", ()=>{
   const res=$("result"); 
   res.className="muted"; 
   res.textContent="Fill the form and click Predict.";
+});
+
+// View Toggle Event
+$("toggleView").addEventListener("click", () => {
+  switchView(currentView === 'prediction' ? 'chatbot' : 'prediction');
 });
 
 /* ===== Theme toggle ===== */
@@ -638,5 +883,6 @@ $("resetBtn").addEventListener("click", ()=>{
 
 /* ===== Init ===== */
 document.addEventListener("DOMContentLoaded", ()=>{ 
-  initSelectors(); 
+  initSelectors();
+  initChatbot();
 });

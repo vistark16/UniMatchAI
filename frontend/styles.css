@@ -8,6 +8,7 @@
   --header-bg:#ffffffcc; --footer-bg:#ffffff;
   --radius:16px; --shadow:0 10px 30px rgba(15,23,42,.06);
   --page-bg: var(--bg);
+  --success:#22c55e; --warning:#f59e0b; --danger:#ef4444;
 }
 
 /* Dark override */
@@ -22,6 +23,7 @@
     radial-gradient(1200px 400px at 10% -10%, rgba(34,211,238,.18), transparent 60%),
     radial-gradient(1200px 400px at 90% -10%, rgba(91,140,255,.18), transparent 60%),
     linear-gradient(180deg, #0b1226, #0f172a);
+  --success:#10b981; --warning:#fbbf24; --danger:#f87171;
 }
 
 /* ================= Base ================= */
@@ -55,15 +57,358 @@ body{
 .main-grid{display:grid;grid-template-columns:1fr;gap:18px}
 @media (min-width:980px){.main-grid{grid-template-columns:1.2fr 0.8fr}.main-grid .card:nth-child(2){grid-row:span 2}}
 
+/* View Container */
+.view-container {
+  display: block;
+  animation: viewIn 0.3s ease;
+}
+
+@keyframes viewIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* ================= Card ================= */
-.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);overflow:visible}
 .card-title{margin:0 0 6px 0;font-size:18px}
+
+/* Chatbot Card Specific */
+.chatbot-card {
+  height: calc(100vh - 200px);
+  max-height: 800px;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.chatbot-card .card-title {
+  padding: 18px 18px 12px 18px;
+  margin: 0;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.chatbot-card .muted {
+  padding: 0 18px 18px 18px;
+  margin: 0;
+  border-bottom: 1px solid var(--card-border);
+}
+
+/* ================= Chat Container ================= */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+}
+
+.message {
+  display: flex;
+  max-width: 85%;
+  word-wrap: break-word;
+  animation: messageIn 0.3s ease;
+}
+
+@keyframes messageIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.user-message {
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.bot-message {
+  align-self: flex-start;
+  margin-right: auto;
+}
+
+.message-content {
+  padding: 12px 16px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.5;
+  position: relative;
+}
+
+.user-message .message-content {
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  color: white;
+  border-bottom-right-radius: 6px;
+}
+
+.bot-message .message-content {
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  color: var(--text);
+  border-bottom-left-radius: 6px;
+}
+
+/* Typing Indicator */
+.typing .message-content {
+  padding: 16px 20px;
+}
+
+.typing-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.typing-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  animation: typingDot 1.4s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(1) { animation-delay: 0s; }
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingDot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-10px); opacity: 1; }
+}
+
+/* ================= Chat Input ================= */
+.chat-input-container {
+  border-top: 1px solid var(--card-border);
+  padding: 20px;
+  background: var(--card);
+}
+
+.chat-input-wrapper {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.chat-input {
+  flex: 1;
+  min-height: 56px;
+  max-height: 160px;
+  resize: none;
+  border-radius: 16px;
+  padding: 16px 20px;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-y: auto;
+  border: 2px solid var(--card-border);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chat-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+.chat-input::placeholder {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.send-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  font-size: 16px;
+}
+
+.send-btn:hover {
+  transform: scale(1.05);
+}
+
+.send-btn:active {
+  transform: scale(0.95);
+}
+
+.send-icon {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* ================= Chat Suggestions (Optional) ================= */
+.chat-suggestions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.suggestion-btn {
+  padding: 12px 16px;
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.suggestion-btn:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37,99,235,.25);
+}
+
+/* ================= Recommendation Cards ================= */
+.recommendation-card .message-content,
+.study-plan-card .message-content {
+  max-width: none;
+  padding: 16px;
+}
+
+.recommendation-card h4,
+.study-plan-card h4 {
+  margin: 0 0 12px 0;
+  color: var(--primary);
+  font-size: 16px;
+}
+
+.recommendations-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rec-item {
+  padding: 12px;
+  background: rgba(37,99,235,.05);
+  border-radius: 12px;
+  border: 1px solid rgba(37,99,235,.1);
+  transition: transform 0.2s ease;
+}
+
+:root[data-theme="dark"] .rec-item {
+  background: rgba(91,140,255,.08);
+  border-color: rgba(91,140,255,.15);
+}
+
+.rec-item:hover {
+  transform: translateY(-1px);
+}
+
+.rec-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.rec-rank {
+  background: var(--primary);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.rec-major {
+  flex: 1;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.rec-probability {
+  padding: 4px 8px;
+  border-radius: 12px;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.rec-details {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rec-details small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* ================= Study Plan Cards ================= */
+.study-plan-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.study-subject {
+  padding: 12px;
+  background: rgba(34,211,238,.05);
+  border-radius: 12px;
+  border: 1px solid rgba(34,211,238,.1);
+}
+
+:root[data-theme="dark"] .study-subject {
+  background: rgba(34,211,238,.08);
+  border-color: rgba(34,211,238,.15);
+}
+
+.study-subject h5 {
+  margin: 0 0 8px 0;
+  color: var(--primary-2);
+  font-size: 14px;
+}
+
+.topics-list {
+  margin: 0;
+  padding-left: 18px;
+  list-style-type: disc;
+}
+
+.topics-list li {
+  margin: 4px 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.topics-list li em {
+  color: var(--muted);
+}
 
 /* ================= Form ================= */
 .grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .section-heading{margin:18px 0 10px;font-size:14px;color:var(--muted);letter-spacing:.2px;text-transform:uppercase}
 label{display:flex;flex-direction:column;gap:8px;font-size:13px}
-.input, input[type=number], select{
+.input, input[type=number], select, textarea{
   appearance:none;width:100%;padding:10px 12px;border-radius:12px;
   border:1px solid var(--card-border); background:var(--input-bg); color:var(--text);
   outline:none; transition:border .2s, box-shadow .2s, transform .05s;
@@ -136,11 +481,11 @@ label{display:flex;flex-direction:column;gap:8px;font-size:13px}
 /* ================= Result ================= */
 .result .bar{height:12px;background:var(--bar-bg);border-radius:999px;overflow:hidden;margin:8px 0 6px}
 .result .fill{height:100%;background:var(--primary);transition:width .35s ease}
-.result .fill.medium{background:#f59e0b}
-.result .fill.low{background:#ef4444}
+.result .fill.medium{background:var(--warning)}
+.result .fill.low{background:var(--danger)}
 .result .meta{font-size:13px;color:var(--muted)}
-.error{color:#b91c1c;background:rgba(185,28,28,.05);padding:12px;border-radius:8px;border-left:3px solid #b91c1c}
-:root[data-theme="dark"] .error{background:rgba(185,28,28,.1)}
+.error{color:var(--danger);background:rgba(239,68,68,.05);padding:12px;border-radius:8px;border-left:3px solid var(--danger)}
+:root[data-theme="dark"] .error{background:rgba(239,68,68,.1)}
 pre{white-space:pre-wrap;word-wrap:break-word;background:var(--code-bg);border:1px solid var(--card-border);border-radius:12px;padding:10px;margin:8px 0 0}
 
 /* ================= Lists ================= */
@@ -166,12 +511,14 @@ pre{white-space:pre-wrap;word-wrap:break-word;background:var(--code-bg);border:1
   background:var(--input-bg);
   cursor:text;
   transition:border .2s, box-shadow .2s, transform .05s, opacity .2s;
+  z-index:1;
 }
 
 .single-select:focus-within{
   border-color:var(--primary);
   box-shadow:0 0 0 4px var(--ring);
   transform:translateY(-1px);
+  z-index:10;
 }
 
 .single-select.disabled {
@@ -247,7 +594,6 @@ pre{white-space:pre-wrap;word-wrap:break-word;background:var(--code-bg);border:1
 }
 
 /* ================= Dropdown Styles ================= */
-
 .dropdown{
   position:absolute; 
   top:100%; 
@@ -264,27 +610,6 @@ pre{white-space:pre-wrap;word-wrap:break-word;background:var(--code-bg);border:1
   animation:dropdownIn 0.15s ease;
 }
 :root[data-theme="dark"] .dropdown{box-shadow:0 10px 30px rgba(0,0,0,.25)}
-
-/* Ensure single-select containers have proper stacking context */
-.single-select{
-  position:relative; 
-  display:flex; 
-  align-items:center; 
-  min-height:44px;
-  padding:8px; 
-  border:1px solid var(--card-border); 
-  border-radius:12px; 
-  background:var(--input-bg);
-  cursor:text;
-  transition:border .2s, box-shadow .2s, transform .05s, opacity .2s;
-  z-index:1;
-}
-.single-select:focus-within{
-  border-color:var(--primary);
-  box-shadow:0 0 0 4px var(--ring);
-  transform:translateY(-1px);
-  z-index:10;
-}
 
 @keyframes dropdownIn {
   from {opacity:0; transform:translateY(-8px) scale(0.95)}
@@ -401,6 +726,57 @@ pre{white-space:pre-wrap;word-wrap:break-word;background:var(--code-bg);border:1
     font-size: 12px;
     padding: 4px 8px;
   }
+  
+  /* Mobile Chat Adjustments */
+  .chatbot-card {
+    height: calc(100vh - 120px);
+    min-height: 500px;
+  }
+  
+  .chat-input-container {
+    padding: 16px;
+  }
+  
+  .chat-input {
+    min-height: 48px;
+    font-size: 16px; /* Prevent zoom on iOS */
+    padding: 14px 16px;
+  }
+  
+  .send-btn {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .message {
+    max-width: 95%;
+  }
+  
+  .message-content {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  
+  .chat-suggestions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .suggestion-btn {
+    text-align: center;
+    font-size: 14px;
+    padding: 14px 16px;
+  }
+  
+  .rec-header {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .rec-details {
+    flex-direction: column;
+    gap: 4px;
+  }
 }
 
 /* ================= Fix Dropdown Layering Issues ================= */
@@ -431,20 +807,6 @@ pre{white-space:pre-wrap;word-wrap:break-word;background:var(--code-bg);border:1
 /* Ensure dropdown appears above other form elements */
 .single-select .dropdown {
   z-index: 9999;
-}
-
-/* Prevent dropdown from being clipped by parent containers */
-.card {
-  background:var(--card);
-  border:1px solid var(--card-border);
-  border-radius:var(--radius);
-  padding:18px;
-  box-shadow:var(--shadow);
-  overflow: visible;
-}
-
-.choice-section {
-  overflow: visible;
 }
 
 /* ================= Loading States ================= */
@@ -496,40 +858,58 @@ pre{white-space:pre-wrap;word-wrap:break-word;background:var(--code-bg);border:1
 
 /* ================= Scrollbar Styling ================= */
 .dropdown::-webkit-scrollbar,
-.table-wrap::-webkit-scrollbar {
+.table-wrap::-webkit-scrollbar,
+.chat-messages::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 .dropdown::-webkit-scrollbar-track,
-.table-wrap::-webkit-scrollbar-track {
+.table-wrap::-webkit-scrollbar-track,
+.chat-messages::-webkit-scrollbar-track {
   background: transparent;
 }
 
 .dropdown::-webkit-scrollbar-thumb,
-.table-wrap::-webkit-scrollbar-thumb {
+.table-wrap::-webkit-scrollbar-thumb,
+.chat-messages::-webkit-scrollbar-thumb {
   background: var(--muted);
   border-radius: 3px;
 }
 
 .dropdown::-webkit-scrollbar-thumb:hover,
-.table-wrap::-webkit-scrollbar-thumb:hover {
+.table-wrap::-webkit-scrollbar-thumb:hover,
+.chat-messages::-webkit-scrollbar-thumb:hover {
   background: var(--text);
 }
 
 /* ================= Focus States ================= */
 .btn:focus-visible,
 .input:focus-visible,
-.toggle:focus-visible {
+.toggle:focus-visible,
+.suggestion-btn:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
+}
+
+/* ================= Accessibility ================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* ================= Print Styles ================= */
 @media print {
   .site-header,
   .site-footer,
-  .actions {
+  .actions,
+  .chat-input-container,
+  .chat-suggestions {
     display: none;
   }
   
@@ -545,5 +925,15 @@ pre{white-space:pre-wrap;word-wrap:break-word;background:var(--code-bg);border:1
   
   .choice-section {
     break-inside: avoid;
+  }
+  
+  .chatbot-card {
+    height: auto;
+    max-height: none;
+  }
+  
+  .chat-messages {
+    height: auto;
+    overflow: visible;
   }
 }

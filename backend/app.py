@@ -1,3 +1,4 @@
+# backend/app.py (updated with chatbot integration)
 import math, json, pathlib
 from rapidfuzz import process, fuzz  # pip install rapidfuzz
 import sys, os
@@ -10,6 +11,7 @@ from utils import average, decision_label, recommendations
 
 from models import UnimatchDummyModel
 from llm_scorer import LLMScorer
+from chatbot import EducationChatbot
 
 load_dotenv()
 
@@ -24,6 +26,19 @@ llm = LLMScorer() if USE_LLM else None
 dummy = UnimatchDummyModel()
 
 # -------------------------------------------------------
+# Initialize Chatbot
+# -------------------------------------------------------
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+MAJORS_KB_PATH = ROOT / "kb" / "majors.json"
+STUDENT_DATA_PATH = ROOT / "data" / "student_data.xlsx"  # Path to your student Excel data
+
+# Initialize chatbot
+chatbot = EducationChatbot(
+    majors_kb_path=str(MAJORS_KB_PATH),
+    student_data_path=str(STUDENT_DATA_PATH) if STUDENT_DATA_PATH.exists() else None
+)
+
+# -------------------------------------------------------
 # Health / KB APIs
 # -------------------------------------------------------
 @app.get("/api/health")
@@ -33,6 +48,7 @@ def health():
         "name": "unimatch-ai",
         "version": "0.4.0",
         "llm_enabled": bool(llm and llm.client) if USE_LLM else False,
+        "chatbot_enabled": True,
     }
 
 @app.get("/api/kb/stats")
@@ -44,7 +60,67 @@ def kb_stats():
         "majors_count": len(llm.kb.majors) if llm.kb and llm.kb.majors else 0,
         "distros_keys": list(llm.kb.distros.keys()) if llm.kb and llm.kb.distros else [],
         "calibrator_loaded": llm.calibrator.loaded if llm else False,
+        "chatbot_kb_loaded": len(chatbot.majors_kb) > 0,
     }
+
+# -------------------------------------------------------
+# Chatbot API
+# -------------------------------------------------------
+@app.post("/api/chatbot")
+def chatbot_endpoint():
+    """Handle chatbot conversations"""
+    try:
+        data = request.get_json()
+        message = data.get('message', '').strip()
+        
+        if not message:
+            return jsonify({"error": "Message is required"}), 400
+        
+        # Process message with chatbot
+        response = chatbot.process_message(message)
+        
+        return jsonify({
+            "response": response.message,
+            "recommendations": response.recommendations,
+            "study_plan": [
+                {
+                    "subject": plan.subject,
+                    "topics": plan.topics,
+                    "difficulty": plan.difficulty
+                }
+                for plan in response.study_plan
+            ],
+            "confidence": response.confidence,
+            "intent": chatbot.detect_intent(message),
+            "timestamp": __import__('datetime').datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.get("/api/chatbot/subjects")
+def get_curriculum_subjects():
+    """Get available subjects for each program"""
+    return jsonify({
+        "saintek": list(chatbot.curriculum_map.get("saintek", {}).keys()),
+        "soshum": list(chatbot.curriculum_map.get("soshum", {}).keys())
+    })
+
+@app.get("/api/chatbot/topics/<program>/<subject>")
+def get_subject_topics(program, subject):
+    """Get topics for a specific subject and program"""
+    curriculum = chatbot.curriculum_map.get(program, {})
+    topics = curriculum.get(subject, [])
+    
+    return jsonify({
+        "program": program,
+        "subject": subject,
+        "topics": topics
+    })
+
+# -------------------------------------------------------
+# Existing APIs (keep all original endpoints)
+# -------------------------------------------------------
 
 @app.get("/api/kb/universities")
 def kb_universities():
