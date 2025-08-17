@@ -41,14 +41,7 @@
             <option value="soshum">Soshum</option>
           </select>
         </label>
-        <label>Target Majors
-          <div class="multi-select" id="majorsBox">
-            <div class="chips" id="majorsChips"></div>
-            <input id="majorsInput" class="input" placeholder="Type to search majors…" autocomplete="off" />
-            <div class="dropdown" id="majorsDropdown" hidden></div>
-          </div>
-          <small class="muted">Type to search, <strong>Enter</strong> to add, click to select, <strong>Backspace</strong> to remove last.</small>
-        </label>
+        
         <label>Competitiveness
           <select id="competitiveness" class="input">
             <option value="very">Very competitive</option>
@@ -80,7 +73,75 @@
         </label>
       </div>
 
-      <h3 class="section-heading">Report Card (S1–S5)</h3>
+      <h3 class="section-heading">University & Major Preferences</h3>
+      
+      <!-- Choice 1 -->
+      <div class="choice-section">
+        <h4 class="choice-title">Choice 1 (Priority)</h4>
+        <div class="choice-grid">
+          <label>University
+            <div class="single-select" id="choice1UniversityBox">
+              <div class="selected-major" id="choice1UniversitySelected"></div>
+              <input id="choice1UniversityInput" class="input" placeholder="Type to search university" autocomplete="off" />
+              <div class="dropdown" id="choice1UniversityDropdown" hidden></div>
+            </div>
+          </label>
+          
+          <label>Major
+            <div class="single-select disabled" id="choice1MajorBox">
+              <div class="selected-major" id="choice1MajorSelected"></div>
+              <input id="choice1MajorInput" class="input" placeholder="Select university first" autocomplete="off" disabled />
+              <div class="dropdown" id="choice1MajorDropdown" hidden></div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Choice 2 -->
+      <div class="choice-section">
+        <h4 class="choice-title">Choice 2 (Alternative)</h4>
+        <div class="choice-grid">
+          <label>University
+            <div class="single-select" id="choice2UniversityBox">
+              <div class="selected-major" id="choice2UniversitySelected"></div>
+              <input id="choice2UniversityInput" class="input" placeholder="Type to search university" autocomplete="off" />
+              <div class="dropdown" id="choice2UniversityDropdown" hidden></div>
+            </div>
+          </label>
+          
+          <label>Major
+            <div class="single-select disabled" id="choice2MajorBox">
+              <div class="selected-major" id="choice2MajorSelected"></div>
+              <input id="choice2MajorInput" class="input" placeholder="Select university first" autocomplete="off" disabled />
+              <div class="dropdown" id="choice2MajorDropdown" hidden></div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Choice 3 -->
+      <div class="choice-section">
+        <h4 class="choice-title">Choice 3 (Backup)</h4>
+        <div class="choice-grid">
+          <label>University
+            <div class="single-select" id="choice3UniversityBox">
+              <div class="selected-major" id="choice3UniversitySelected"></div>
+              <input id="choice3UniversityInput" class="input" placeholder="Type to search university" autocomplete="off" />
+              <div class="dropdown" id="choice3UniversityDropdown" hidden></div>
+            </div>
+          </label>
+          
+          <label>Major
+            <div class="single-select disabled" id="choice3MajorBox">
+              <div class="selected-major" id="choice3MajorSelected"></div>
+              <input id="choice3MajorInput" class="input" placeholder="Select university first" autocomplete="off" disabled />
+              <div class="dropdown" id="choice3MajorDropdown" hidden></div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <h3 class="section-heading">Report Card (S1—S5)</h3>
       <div class="grid">
         <input id="s1" class="input" type="number" placeholder="S1 (0-100)" />
         <input id="s2" class="input" type="number" placeholder="S2 (0-100)" />
@@ -119,6 +180,8 @@
       <ul class="list">
         <li>This is a <strong>demo scaffold</strong>. Replace the dummy model with a real ML pipeline later.</li>
         <li>Probabilities are illustrative; not official SNBP outcomes.</li>
+        <li><strong>University & Major Priorities:</strong> Choose your top 3 university-major combinations in order.</li>
+        <li><strong>Major Selection:</strong> You must select a university first before choosing a major for each choice.</li>
       </ul>
     </section>
   </main>

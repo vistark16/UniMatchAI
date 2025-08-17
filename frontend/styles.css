@@ -70,12 +70,57 @@ label{display:flex;flex-direction:column;gap:8px;font-size:13px}
 }
 .input:focus{border-color:var(--primary);box-shadow:0 0 0 4px var(--ring);transform:translateY(-1px)}
 
+/* ================= Choice Section Styling ================= */
+.choice-section {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: rgba(37,99,235,.02);
+}
+
+:root[data-theme="dark"] .choice-section {
+  background: rgba(91,140,255,.05);
+}
+
+.choice-title {
+  margin: 0 0 12px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.choice-title::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.choice-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 768px) {
+  .choice-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ================= Buttons ================= */
 .actions{display:flex;gap:10px;margin-top:12px}
 .btn{padding:10px 14px;border-radius:12px;border:1px solid var(--card-border);color:var(--text);background:var(--input-bg);cursor:pointer;transition:transform .05s, box-shadow .15s, background .2s, border .2s}
 .btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(15,23,42,.08)}
 :root[data-theme="dark"] .btn:hover{box-shadow:0 8px 20px rgba(0,0,0,.25)}
 .btn.primary{background:linear-gradient(90deg,var(--primary),var(--primary-2));border-color:transparent;color:#fff;font-weight:700}
+.btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+.btn:disabled:hover{box-shadow:none}
 .btn-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#fff;margin-right:8px;vertical-align:middle}
 
 /* ================= Theme Toggle ================= */
@@ -94,42 +139,411 @@ label{display:flex;flex-direction:column;gap:8px;font-size:13px}
 .result .fill.medium{background:#f59e0b}
 .result .fill.low{background:#ef4444}
 .result .meta{font-size:13px;color:var(--muted)}
-.error{color:#b91c1c}
+.error{color:#b91c1c;background:rgba(185,28,28,.05);padding:12px;border-radius:8px;border-left:3px solid #b91c1c}
+:root[data-theme="dark"] .error{background:rgba(185,28,28,.1)}
 pre{white-space:pre-wrap;word-wrap:break-word;background:var(--code-bg);border:1px solid var(--card-border);border-radius:12px;padding:10px;margin:8px 0 0}
 
 /* ================= Lists ================= */
 .list{margin:8px 0 0 0;padding-left:18px}
 .list li{margin:6px 0}
 
-.table-wrap{overflow:auto;border:1px solid var(--card-border);border-radius:12px}
+.table-wrap{overflow:auto;border:1px solid var(--card-border);border-radius:12px;margin-top:12px}
 .tbl{width:100%;border-collapse:collapse;font-size:14px;background:var(--card)}
 .tbl th,.tbl td{padding:10px 12px;border-bottom:1px solid var(--card-border);text-align:left}
 .tbl thead th{position:sticky;top:0;background:var(--input-bg)}
 .tbl tbody tr:hover{background:rgba(37,99,235,.05)}
 :root[data-theme="dark"] .tbl tbody tr:hover{background:rgba(91,140,255,.08)}
 
-/* ===== Searchable multi-select ===== */
-.multi-select{position:relative; display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:8px; border:1px solid var(--card-border); border-radius:12px; background:var(--input-bg)}
-.multi-select:focus-within{outline:2px solid var(--primary); outline-offset:0}
+/* ================= Single Major Select ================= */
+.single-select{
+  position:relative; 
+  display:flex; 
+  align-items:center; 
+  min-height:44px;
+  padding:8px; 
+  border:1px solid var(--card-border); 
+  border-radius:12px; 
+  background:var(--input-bg);
+  cursor:text;
+  transition:border .2s, box-shadow .2s, transform .05s, opacity .2s;
+}
 
-.multi-select .chips{display:flex; flex-wrap:wrap; gap:6px}
-.chip{display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:999px; background:rgba(37,99,235,.10); font-size:12px}
-:root[data-theme="dark"] .chip{background:rgba(91,140,255,.12)}
-.chip button{all:unset; cursor:pointer; font-weight:700}
+.single-select:focus-within{
+  border-color:var(--primary);
+  box-shadow:0 0 0 4px var(--ring);
+  transform:translateY(-1px);
+}
 
-#majorsInput{min-width:160px; flex:1; border:none; background:transparent; padding:4px 0}
-#majorsInput:focus{outline:none}
+.single-select.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--bar-bg);
+}
 
-.dropdown{position:absolute; top:100%; left:0; right:0; z-index:999; background:var(--card); border:1px solid var(--card-border); border-radius:12px; margin-top:6px; max-height:260px; overflow:auto; box-shadow:0 10px 30px rgba(0,0,0,.08)}
-.dropdown .opt{padding:10px 12px; cursor:pointer}
-.dropdown .opt:hover{background:rgba(37,99,235,.08)}
-:root[data-theme="dark"] .dropdown .opt:hover{background:rgba(91,140,255,.12)}
-.dropdown .empty{padding:10px 12px; color:var(--text-muted)}
+.single-select.disabled:focus-within {
+  border-color: var(--card-border);
+  box-shadow: none;
+  transform: none;
+}
 
+.selected-major{
+  flex:1;
+  min-height:28px;
+  display:flex;
+  align-items:center;
+}
 
-/* ===== Searchable multi-select (if belum ada, biarkan) ===== */
-.multi-select{position:relative; display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:8px; border:1px solid var(--card-border); border-radius:12px; background:var(--input-bg)}
-.multi-select:focus-within{outline:2px solid var(--primary); outline-offset:0}
-.multi-select .chips{display:flex; flex-wrap:wrap; gap:6px}
-.chip{display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:999px; background:rgba(37,99,235,.10); font-size:12px}
-:root[data-theme="dark
+.selected-chip{
+  display:inline-flex; 
+  align-items:center; 
+  gap:8px; 
+  padding:6px 12px; 
+  border-radius:999px; 
+  background:rgba(37,99,235,.10); 
+  font-size:13px;
+  font-weight:500;
+  animation:chipIn 0.2s ease;
+  width:100%;
+  justify-content:space-between;
+}
+:root[data-theme="dark"] .selected-chip{background:rgba(91,140,255,.12)}
+
+.remove-btn{
+  all:unset; 
+  cursor:pointer; 
+  font-weight:700;
+  color:var(--text);
+  opacity:0.7;
+  transition:opacity 0.2s;
+  width:20px;
+  height:20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  background:rgba(255,255,255,.2);
+}
+.remove-btn:hover{
+  opacity:1;
+  background:rgba(255,255,255,.3);
+}
+
+.single-select input{ 
+  border:none; 
+  background:transparent; 
+  padding:4px 0;
+  color:var(--text);
+}
+.single-select input:focus{outline:none}
+.single-select input::placeholder{color:var(--muted)}
+.single-select input:disabled {
+  cursor: not-allowed;
+  color: var(--muted);
+}
+
+@keyframes chipIn {
+  from {opacity:0; transform:scale(0.8)}
+  to {opacity:1; transform:scale(1)}
+}
+
+/* ================= Dropdown Styles ================= */
+
+.dropdown{
+  position:absolute; 
+  top:100%; 
+  left:0; 
+  right:0; 
+  z-index:9999; 
+  background:var(--card); 
+  border:1px solid var(--card-border); 
+  border-radius:12px; 
+  margin-top:6px; 
+  max-height:260px; 
+  overflow:auto; 
+  box-shadow:0 10px 30px rgba(0,0,0,.08);
+  animation:dropdownIn 0.15s ease;
+}
+:root[data-theme="dark"] .dropdown{box-shadow:0 10px 30px rgba(0,0,0,.25)}
+
+/* Ensure single-select containers have proper stacking context */
+.single-select{
+  position:relative; 
+  display:flex; 
+  align-items:center; 
+  min-height:44px;
+  padding:8px; 
+  border:1px solid var(--card-border); 
+  border-radius:12px; 
+  background:var(--input-bg);
+  cursor:text;
+  transition:border .2s, box-shadow .2s, transform .05s, opacity .2s;
+  z-index:1;
+}
+.single-select:focus-within{
+  border-color:var(--primary);
+  box-shadow:0 0 0 4px var(--ring);
+  transform:translateY(-1px);
+  z-index:10;
+}
+
+@keyframes dropdownIn {
+  from {opacity:0; transform:translateY(-8px) scale(0.95)}
+  to {opacity:1; transform:translateY(0) scale(1)}
+}
+
+.dropdown .opt{
+  padding:10px 12px; 
+  cursor:pointer;
+  transition:background 0.15s;
+  border-radius:8px;
+  margin:2px 4px;
+}
+.dropdown .opt:hover{
+  background:rgba(37,99,235,.08);
+}
+:root[data-theme="dark"] .dropdown .opt:hover{
+  background:rgba(91,140,255,.12);
+}
+.dropdown .opt.highlighted{
+  background:rgba(37,99,235,.12);
+}
+:root[data-theme="dark"] .dropdown .opt.highlighted{
+  background:rgba(91,140,255,.18);
+}
+.dropdown .empty{
+  padding:10px 12px; 
+  color:var(--muted);
+  font-style:italic;
+}
+
+/* ================= Table Tags ================= */
+.tags {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  padding: 2px 6px;
+  background: rgba(37,99,235,.1);
+  border-radius: 4px;
+  font-size: 10px;
+  color: var(--text);
+  border: 1px solid rgba(37,99,235,.2);
+}
+
+:root[data-theme="dark"] .tag {
+  background: rgba(91,140,255,.15);
+  border-color: rgba(91,140,255,.3);
+}
+
+/* ================= Mobile Responsiveness ================= */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+  
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .choice-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .choice-section {
+    padding: 12px;
+  }
+  
+  .choice-title {
+    font-size: 14px;
+  }
+  
+  .actions {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .header-inner {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .site-footer .container {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+  
+  .table-wrap {
+    font-size: 12px;
+  }
+  
+  .tbl th,
+  .tbl td {
+    padding: 8px 6px;
+  }
+  
+  .dropdown {
+    max-height: 200px;
+  }
+  
+  .selected-chip {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+}
+
+/* ================= Fix Dropdown Layering Issues ================= */
+.grid label:has(.single-select:focus-within) {
+  z-index: 100;
+  position: relative;
+}
+
+.choice-grid label:has(.single-select:focus-within) {
+  z-index: 100;
+  position: relative;
+}
+
+.grid {
+  display:grid;
+  gap:12px;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  position: relative;
+}
+
+.choice-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+  position: relative;
+}
+
+/* Ensure dropdown appears above other form elements */
+.single-select .dropdown {
+  z-index: 9999;
+}
+
+/* Prevent dropdown from being clipped by parent containers */
+.card {
+  background:var(--card);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius);
+  padding:18px;
+  box-shadow:var(--shadow);
+  overflow: visible;
+}
+
+.choice-section {
+  overflow: visible;
+}
+
+/* ================= Loading States ================= */
+.loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255,255,255,0.7);
+  border-radius: inherit;
+  z-index: 1;
+}
+
+:root[data-theme="dark"] .loading::after {
+  background: rgba(0,0,0,0.7);
+}
+
+/* ================= Animations ================= */
+.btn-dot {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.result.success {
+  animation: resultIn 0.3s ease;
+}
+
+@keyframes resultIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================= Scrollbar Styling ================= */
+.dropdown::-webkit-scrollbar,
+.table-wrap::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.dropdown::-webkit-scrollbar-track,
+.table-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dropdown::-webkit-scrollbar-thumb,
+.table-wrap::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: 3px;
+}
+
+.dropdown::-webkit-scrollbar-thumb:hover,
+.table-wrap::-webkit-scrollbar-thumb:hover {
+  background: var(--text);
+}
+
+/* ================= Focus States ================= */
+.btn:focus-visible,
+.input:focus-visible,
+.toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ================= Print Styles ================= */
+@media print {
+  .site-header,
+  .site-footer,
+  .actions {
+    display: none;
+  }
+  
+  .card {
+    box-shadow: none;
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+  
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .choice-section {
+    break-inside: avoid;
+  }
+}

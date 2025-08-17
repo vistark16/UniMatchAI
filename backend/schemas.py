@@ -1,10 +1,28 @@
 from pydantic import BaseModel, Field, conint, confloat
-from typing import Optional, Literal
+from typing import Optional, Literal, List
 
 class PredictRequest(BaseModel):
     program: Literal["saintek", "soshum"]
-    target_major: str
+    
+    # Legacy fields (for backward compatibility)
+    target_major: Optional[str] = None
+    
+    # New university-major selection fields
+    target_university: Optional[str] = None
+    target_university_1: Optional[str] = None
+    target_university_2: Optional[str] = None
+    target_university_3: Optional[str] = None
+    
+    target_major_1: Optional[str] = None
+    target_major_2: Optional[str] = None
+    target_major_3: Optional[str] = None
+    
+    # Array fields for multiple selections
+    target_universities: Optional[List[str]] = None
+    target_majors: Optional[List[str]] = None
+    
     competitiveness: Literal["very", "high", "mid", "low"]
+    
     # semester grades 0–100; allow missing to simulate incomplete inputs
     s1: Optional[confloat(ge=0, le=100)] = None
     s2: Optional[confloat(ge=0, le=100)] = None
